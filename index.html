@@ -271,6 +271,7 @@ header a.mk{display:flex;align-items:center;gap:11px;padding:0;margin-right:8px;
 #menu .grp{padding:16px 8px 8px;font:600 10px var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--ne)}#menu .grp:before{content:"/// "}#menu .grp.e{display:none}
 #menu a{display:flex;align-items:center;gap:12px;padding:8px;min-height:62px;border-top:1px solid var(--ln2);color:var(--tx);transition:background .12s,color .12s}#menu a:hover{background:var(--fill);color:var(--onf)}#menu a.act{box-shadow:inset 3px 0 var(--fill)}#menu a.act:not(:hover) .n{color:var(--ne)}
 #menu a:before{content:attr(data-i);flex:none;width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--ln);background:repeating-linear-gradient(135deg,transparent 0 5px,rgba(var(--accent-rgb),.07) 5px 6px),var(--bg);font:700 12px var(--mono);letter-spacing:.06em;color:var(--ne)}#menu a:hover:before{background:var(--onf);color:var(--fill);border-color:var(--onf)}
+#menu a.hascv:before,#menu a.hascv:hover:before{content:"";background:var(--cv) center/cover no-repeat,var(--bg);color:transparent}#menu a.hascv:hover:before{border-color:var(--onf)}
 #menu a .t{display:block;min-width:0}#menu a .n{display:block;font:800 13px/1.15 var(--disp);font-stretch:112%;text-transform:uppercase;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#menu a .s{display:block;margin-top:4px;font:500 9px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#menu a:hover .s{color:var(--onf)}
 #menu a.add:before{content:"+";font-size:20px;font-weight:400;color:var(--mut)}#menu a.add .n{color:var(--mut)}
 body.sbc .sbn span,body.sbc .sb-s,body.sbc #menu .grp,body.sbc #menu a .t,body.sbc #ux-sbp{display:none}body.sbc .sbn{justify-content:center;padding:0}body.sbc #menu a{justify-content:center;padding:6px 0}body.sbc .sb-lh{justify-content:center}body.sbc .sb-lh .sbn{flex:none}
@@ -307,8 +308,8 @@ body.on-set #landing,body.on-set .spec{display:none}
 .spec{display:none;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--ln2);margin:0 24px}.on-home .spec{display:grid}.spec div{padding:30px 22px 38px;border-right:1px solid var(--ln2)}.spec div:last-child{border-right:0}.spec small{font:500 11px var(--mono);letter-spacing:.2em;color:var(--ne)}
 .spec h3{margin:14px 0 10px;font:800 clamp(20px,2.6vw,32px)/1 var(--disp);font-stretch:118%;text-transform:uppercase;letter-spacing:-.02em}.spec p{margin:0;font:400 12px/1.7 var(--mono);color:var(--mut);max-width:340px}
 /* ---- tableau de bord ---- */
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;border:1px solid var(--ln);margin-top:28px}.stat{position:relative;background:none;border:0;border-right:1px solid var(--ln);border-radius:0;box-shadow:none;padding:20px 22px 18px}.stat:last-child{border-right:0}
-.stat:before{content:"+";position:absolute;top:8px;right:12px;color:var(--mut);font-size:12px}.stat b{display:block;font:500 clamp(32px,4.4vw,64px)/1 var(--mono);letter-spacing:-.07em;color:var(--ne);font-variant-numeric:tabular-nums}.stat span{display:block;margin-top:10px;font:500 10px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--ln);margin-top:28px}.stat{position:relative;background:none;border:0;border-right:1px solid var(--ln);border-radius:0;box-shadow:none;padding:22px 24px 20px}.stat:last-child{border-right:0}
+.stat:before{content:"+";position:absolute;top:8px;right:12px;color:var(--mut);font-size:12px}.stat b{display:block;font:500 clamp(34px,7.5vw,112px)/1 var(--mono);letter-spacing:-.07em;color:var(--ne);font-variant-numeric:tabular-nums}.stat span{display:block;margin-top:10px;font:500 10px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--mut)}
 
 .sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cw),1fr));gap:var(--gap);counter-reset:s}
 .set{counter-increment:s;position:relative;display:block;padding:10px;background:transparent;border:1px solid var(--ln2);border-radius:var(--r);color:var(--tx);overflow:visible;box-shadow:none;transition:background .15s,border-color .15s}.set:hover{background:var(--hv);border-color:var(--ne);transform:none}
@@ -766,16 +767,17 @@ async function lookup(n){if(n in AC)return AC[n];try{const r=await fetch('https:
 function toData(f,cb,W){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const w=W||360,h=Math.round(im.height*w/im.width),cv=document.createElement('canvas');cv.width=w;cv.height=h;cv.getContext('2d').drawImage(im,0,0,w,h);cb(cv.toDataURL('image/jpeg',.85))};im.src=r.result};r.readAsDataURL(f)}
 const pubUrl=p=>sb.storage.from('catalog-images').getPublicUrl(p).data.publicUrl;
 const okUrl=u=>/^https?:\/\//i.test(u||'');
+const covUrl=x=>SU[x.cover]||(x.catCover?pubUrl(x.catCover):'');
 
 /* ---------- Chargement des données ---------- */
 async function loadAll(){
  const q1=()=>sb.from('collections').select('id,name,set_id,is_hidden,sort_order,created_at,cover_path');
- const [c1,s1]=await Promise.all([q1(),sb.from('card_sets').select('id,code,category,release_date,total_cards,sort_order,language_code')]);
+ const [c1,s1]=await Promise.all([q1(),sb.from('card_sets').select('id,code,category,release_date,total_cards,sort_order,language_code,cover_path')]);
  if(c1.error)throw c1.error;if(s1.error)throw s1.error;
  let cols=c1.data;const sets=s1.data;
  if(sets.some(s=>!cols.some(c=>c.set_id===s.id))){const r=await sb.rpc('ensure_set_collections');if(r.error)throw r.error;const c2=await q1();if(c2.error)throw c2.error;cols=c2.data}
  const sm=Object.fromEntries(sets.map(s=>[s.id,s]));
- COLS=cols.map(c=>{const s=c.set_id?sm[c.set_id]:null;return{id:c.id,name:c.name,setId:c.set_id,code:s?s.code:null,hidden:c.is_hidden,cover:c.cover_path||'',
+ COLS=cols.map(c=>{const s=c.set_id?sm[c.set_id]:null;return{id:c.id,name:c.name,setId:c.set_id,code:s?s.code:null,hidden:c.is_hidden,cover:c.cover_path||'',catCover:s&&s.cover_path||'',
   cat:s?s.category:'Mes collections',date:s?s.release_date:null,total:s?s.total_cards:null,lang:s?s.language_code:null,
   sort:s?s.sort_order:1000+(+new Date(c.created_at)%1e6)/1e6,custom:!s}}).sort((a,b)=>a.sort-b.sort);
  const st=await sb.from('collection_stats').select('collection_id,total,owned');if(st.error)throw st.error;
@@ -783,14 +785,23 @@ async function loadAll(){
  try{await signPaths(COLS.map(c=>c.cover))}catch(e){console.warn(e)}
  buildMenu();
 }
-const ITEM_SEL='id,print_id,custom_name,owned,quantity,condition_code,rarity_code,name_override,number_override,image_url,image_path,notes,purchase_price,acquired_on,position,card_prints(set_number,image_path,cards(name_en,name_fr))';
+const ITEM_SEL='id,print_id,custom_name,owned,quantity,condition_code,rarity_code,name_override,number_override,image_url,image_path,notes,purchase_price,acquired_on,position,card_prints(set_number,image_path,cards(name_en,name_fr,category,subtype_codes,type_code,attribute_code,level,atk,def,effect_fr))';
+/* ---------- Infos de carte (fiche détaillée) ---------- */
+const L_TYPE={AQUA:'Aqua',BEAST:'Bête',BEAST_WARRIOR:'Guerrier-Bête',CYBERSE:'Cyberse',DINOSAUR:'Dinosaure',DIVINE_BEAST:'Bête Divine',DRAGON:'Dragon',FAIRY:'Elfe',FIEND:'Démon',FISH:'Poisson',INSECT:'Insecte',MACHINE:'Machine',PLANT:'Plante',PSYCHIC:'Psychique',PYRO:'Pyro',REPTILE:'Reptile',ROCK:'Rocher',SEA_SERPENT:'Serpent de Mer',SPELLCASTER:'Magicien',THUNDER:'Tonnerre',WARRIOR:'Guerrier',WINGED_BEAST:'Bête Ailée',WYRM:'Wyrm',ZOMBIE:'Zombie'},
+ L_SUB={NORMAL:'Normal',EFFECT:'Effet',FUSION:'Fusion',RITUAL:'Rituel',SYNCHRO:'Synchro',XYZ:'Xyz',PENDULUM:'Pendule',LINK:'Lien',TOKEN:'Jeton'},
+ L_ST={NORMAL:'Normale',CONTINUOUS:'Continue',EQUIP:'Équipement',FIELD:'Terrain',QUICKPLAY:'Jeu-Rapide',RITUAL:'Rituelle',COUNTER:'Contre'};
+const pretty=v=>String(v).toLowerCase().replace(/_/g,' ').replace(/^./,m=>m.toUpperCase());
+function cardInfo(c){if(!c)return null;const sub=(c.subtype_codes||[]).map(x=>L_SUB[x]||pretty(x)).join(' / ');let type='';
+ if(c.category==='MONSTER')type=[c.type_code&&(L_TYPE[c.type_code]||pretty(c.type_code)),sub].filter(Boolean).join(' / ');
+ else if(c.category==='SPELL'||c.category==='TRAP')type='Carte '+(c.category==='SPELL'?'Magie':'Piège')+(c.type_code?' · '+(L_ST[c.type_code]||pretty(c.type_code)):'');
+ return{type,attribute:c.attribute_code||'',level:c.level,atk:c.atk,def:c.def,desc:c.effect_fr||''}}
 async function loadItems(colId){let all=[],from=0;
  for(;;){const {data,error}=await sb.from('collection_items').select(ITEM_SEL).eq('collection_id',colId).order('position').order('created_at').order('id').range(from,from+999);
   if(error)throw error;all=all.concat(data);if(data.length<1000)break;from+=1000}
  return all.map(r=>{const p=r.card_prints,c=p&&p.cards;return{id:r.id,pid:r.print_id,n:r.custom_name||(c&&c.name_en)||'?',fr:c&&c.name_fr||'',
   o:r.owned,q:r.quantity,e:r.condition_code,r:RC[r.rarity_code]||'Common',nameO:r.name_override||'',numO:r.number_override||'',
   imgUrl:r.image_url||'',imgPath:r.image_path||'',notes:r.notes||'',price:r.purchase_price,acq:r.acquired_on||'',pos:r.position,
-  setNum:p&&p.set_number||'',catImg:p&&p.image_path||''}})}
+  setNum:p&&p.set_number||'',catImg:p&&p.image_path||'',info:cardInfo(c)}})}
 async function signImages(list){const paths=[...new Set(list.filter(i=>i.imgPath&&!SU[i.imgPath]).map(i=>i.imgPath))];
  for(let i=0;i<paths.length;i+=100){const {data}=await sb.storage.from('user-images').createSignedUrls(paths.slice(i,i+100),3600);(data||[]).forEach(d=>{if(d.signedUrl)SU[d.path]=d.signedUrl})}}
 async function signPaths(paths){paths=[...new Set(paths.filter(p=>p&&!SU[p]))];for(let i=0;i<paths.length;i+=100){const {data}=await sb.storage.from('user-images').createSignedUrls(paths.slice(i,i+100),3600);(data||[]).forEach(d=>{if(d.signedUrl)SU[d.path]=d.signedUrl})}}
@@ -870,38 +881,6 @@ async function delCol(id){const c=COLS.find(x=>x.id===id);if(!c)return;
    const {error}=await sb.from('collections').update({is_hidden:true}).eq('id',id);if(error)throw error}
   await loadAll();home()}catch(e){fail(e,'Suppression impossible')}}
 
-/* ---------- Import de l'ancienne version (données locales) ---------- */
-function legacyLocal(){try{const S0=JSON.parse(localStorage.getItem('ygo-collection-v2')||'null');if(!S0)return null;
- const n=Object.keys(S0.own||{}).length+Object.keys(S0.extra||{}).length+Object.keys(S0.custom||{}).length+Object.keys(S0.names||{}).length;return n?S0:null}catch(e){return null}}
-function idbOld(){return new Promise(r=>{try{const o=indexedDB.open('duel-archive',1);o.onupgradeneeded=()=>o.result.createObjectStore('i');o.onerror=()=>r({});
- o.onsuccess=()=>{try{const q=o.result.transaction('i').objectStore('i').get('img');q.onsuccess=()=>r(q.result||{});q.onerror=()=>r({})}catch(e){r({})}}}catch(e){r({})}})}
-async function legacyImport(S0,IM0){
- S0.own=S0.own||{};S0.extra=S0.extra||{};S0.names=S0.names||{};S0.nums=S0.nums||{};S0.order=S0.order||{};S0.custom=S0.custom||{};S0.hidden=S0.hidden||{};IM0=Object.assign({},S0.img||{},IM0||{});
- const MAP={v1:'VOL1',v2:'VOL2',v3:'VOL3',v4:'VOL4',v5:'VOL5',v6:'VOL6',v7:'VOL7',ldd:'LDD'},targets=[];
- for(const [oid,code] of Object.entries(MAP)){const col=COLS.find(c=>c.code===code);if(col)targets.push({oid,col})}
- for(const [oid,c] of Object.entries(S0.custom)){const {data,error}=await sb.from('collections').insert({name:c.name,sort_order:1000}).select('id').single();if(error)throw error;targets.push({oid,col:{id:data.id,custom:true}})}
- let done=0;const step=()=>toast(`Import en cours… (${++done}/${targets.length} collections)`);
- const chunk=async(arr,fn,n=8)=>{for(let i=0;i<arr.length;i+=n)await Promise.all(arr.slice(i,i+n).map(fn))};
- for(const {oid,col} of targets){
-  const pre=oid+':',keys=[...new Set([...Object.keys(S0.own),...Object.keys(S0.names),...Object.keys(S0.nums),...Object.keys(IM0)].filter(k=>k.startsWith(pre)))];
-  const extras=S0.extra[oid]||[],ord=S0.order[oid];
-  if(!keys.length&&!extras.length&&!(ord&&ord.length)){step();continue}
-  if(!col.custom){const r=await sb.rpc('sync_collection',{p_collection_id:col.id});if(r.error)throw r.error}
-  let items=await loadItems(col.id),by=new Map(items.map(i=>[i.n.toLowerCase(),i]));
-  const rows=extras.filter(x=>x&&x.n&&!by.has(x.n.toLowerCase())).map((x,i)=>({collection_id:col.id,custom_name:x.n,rarity_code:N2C[x.r]||'C',image_url:okUrl(x.img)?x.img:null,position:5000+i}));
-  if(rows.length){const r=await sb.from('collection_items').insert(rows);if(r.error)throw r.error;items=await loadItems(col.id);by=new Map(items.map(i=>[i.n.toLowerCase(),i]))}
-  await chunk(keys,async k=>{const it=by.get(k.slice(pre.length).toLowerCase());if(!it)return;const d={},o=S0.own[k];
-   if(o){d.owned=!!+o.o;d.quantity=Math.min(999,Math.max(1,+o.q||1));const e=EM[o.e]||o.e;if(ETAT.includes(e))d.condition_code=e;if(N2C[o.r])d.rarity_code=N2C[o.r]}
-   if(S0.names[k])d.name_override=S0.names[k];if(S0.nums[k])d.number_override=S0.nums[k];
-   const im=IM0[k];if(im){if(okUrl(im))d.image_url=im;else if(/^data:image\//.test(im)){try{const blob=await (await fetch(im)).blob(),path=`${USER.id}/${it.id}.jpg`;
-     const up=await sb.storage.from('user-images').upload(path,blob,{upsert:true,contentType:blob.type||'image/jpeg'});if(!up.error)d.image_path=path}catch(e){console.warn(e)}}}
-   if(Object.keys(d).length){const r=await sb.from('collection_items').update(d).eq('id',it.id);if(r.error)throw r.error}});
-  if(ord&&ord.length){const ids=ord.map(n=>by.get(String(n).toLowerCase())).filter(Boolean).map(i=>i.id),rest=items.filter(i=>!ids.includes(i.id)).map(i=>i.id);
-   const r=await sb.rpc('reorder_items',{p_collection_id:col.id,p_ids:[...ids,...rest]});if(r.error)throw r.error}
-  const hid=Object.keys(S0.hidden).includes(oid);if(hid){await sb.from('collections').update({is_hidden:true}).eq('id',col.id)}
-  step()}
- localStorage.setItem('duel-legacy-done','1');await loadAll();toast('Import terminé ✓')}
-
 /* ---------- Export ---------- */
 async function exportAll(){try{toast('Préparation de la sauvegarde…');const items=[];
  for(const c of COLS){const l=await loadItems(c.id);l.forEach(i=>items.push({collection:c.name,...i}))}
@@ -918,14 +897,13 @@ theme.onclick=()=>setTheme(root.dataset.theme==='dark'?'light':'dark');
 let filter='all',q='';
 function home(){
  const v=visCols();let tot=0,own=0;v.forEach(c=>{const s=STATS[c.id]||{total:0,owned:0};tot+=s.total;own+=s.owned});
- const hidden=COLS.filter(c=>c.hidden).length,leg=legacyLocal()&&!localStorage.getItem('duel-legacy-done');
- app.innerHTML=`<h1>Ma collection.</h1><div class="sub">Yu-Gi-Oh! · Éditions japonaises</div>
- <div class="tools" style="margin-top:-12px"><button class="btn" id="hn">+ Nouvelle collection</button><button class="btn alt" id="he">↓ Exporter mes données</button><button class="btn alt" id="hi">↑ Importer une ancienne sauvegarde</button><input type="file" id="hf" accept=".json" hidden><input type="file" id="cvf" accept="image/*" hidden></div>
+ const hidden=COLS.filter(c=>c.hidden).length;
+ app.innerHTML=`<h1>Ma collection.</h1><div class="sub">Yu-Gi-Oh! · Éditions françaises</div>
+ <div class="tools" style="margin-top:-12px"><button class="btn" id="hn">+ Nouvelle collection</button><button class="btn alt" id="he">↓ Exporter mes données</button><input type="file" id="cvf" accept="image/*" hidden></div>
  <div class="tools" style="margin-top:-8px"><button class="btn alt" id="hd"></button><button class="btn alt" id="hs" title="Rechercher une collection">⌕</button><input id="hq" placeholder="Rechercher une collection" hidden>${hidden?`<button class="btn alt" id="hr">Restaurer les collections retirées (${hidden})</button>`:''}</div>
- ${leg?'<div class="notice"><b>Données de l\'ancienne version détectées dans ce navigateur.</b><br>Récupère-les pour les enregistrer dans ton compte.<br><button class="btn" id="hl" style="margin-top:10px">↑ Récupérer mes données</button></div>':''}
  <div class="stats"><div class="stat"><b>${own}</b><span>cartes possédées</span></div><div class="stat"><b>${tot}</b><span>cartes référencées</span></div><div class="stat"><b>${tot?Math.round(own/tot*100):0}%</b><span>complété</span></div></div>
  ${cats().map(c=>`<h2>${esc(c)}</h2><div class="sets">${v.filter(x=>x.cat===c).map(x=>{const s=STATS[x.id]||{total:0,owned:0};
- return `<a class="set" href="#/set/${x.id}" data-id="${x.id}" data-n="${esc(x.name.toLowerCase())}"><span class="x">✕</span><div class="cover${SU[x.cover]?'':' empty'}">${SU[x.cover]?`<img src="${esc(SU[x.cover])}" alt="" loading="lazy">`:''}<div class="cvb"><button class="cvu" title="Choisir une image">IMG</button>${x.cover?'<button class="cvr" title="Retirer l\'image">↺</button>':''}</div></div><div class="bd"><h3>${esc(x.name)}</h3><small>${x.date?fmtDate(x.date):(x.custom?'Collection personnelle':'—')}</small><div class="bar"><i style="width:${s.total?s.owned/s.total*100:0}%"></i></div><small>${s.owned} / ${s.total} cartes</small></div></a>`}).join('')}</div>`).join('')}`;
+ return `<a class="set" href="#/set/${x.id}" data-id="${x.id}" data-n="${esc(x.name.toLowerCase())}"><span class="x">✕</span><div class="cover${covUrl(x)?'':' empty'}">${covUrl(x)?`<img src="${esc(covUrl(x))}" alt="" loading="lazy" onerror="this.parentNode.classList.add('empty');this.remove()">`:''}<div class="cvb"><button class="cvu" title="Choisir une image">IMG</button>${x.cover?'<button class="cvr" title="Retirer l\'image">↺</button>':''}</div></div><div class="bd"><h3>${esc(x.name)}</h3><small>${x.date?fmtDate(x.date):(x.custom?'Collection personnelle':'—')}</small><div class="bar"><i style="width:${s.total?s.owned/s.total*100:0}%"></i></div><small>${s.owned} / ${s.total} cartes</small></div></a>`}).join('')}</div>`).join('')}`;
  const hd=$('hd'),setLbl=()=>hd.textContent=app.classList.contains('delmode')?'✓ Terminer':'✕ Supprimer une collection';setLbl();
  hd.onclick=()=>{app.classList.toggle('delmode');setLbl()};
  document.querySelectorAll('.sets').forEach(w=>w.onclick=e=>{const cb=e.target.closest('.cvu,.cvr');if(cb&&!app.classList.contains('delmode')){e.preventDefault();e.stopPropagation();const sid=cb.closest('.set').dataset.id;if(cb.classList.contains('cvu')){cvT=sid;$('cvf').click()}else coverRemove(sid);return}if(!app.classList.contains('delmode'))return;e.preventDefault();const c=e.target.closest('.set');if(c)delCol(c.dataset.id)});
@@ -934,12 +912,6 @@ function home(){
  if($('hr'))$('hr').onclick=async()=>{const {error}=await sb.from('collections').update({is_hidden:false}).eq('is_hidden',true);if(error)return fail(error);await loadAll();home()};
  $('cvf').onchange=()=>{const f=$('cvf').files[0],id=cvT;$('cvf').value='';if(f&&id)coverUpload(id,f)};
  $('hn').onclick=newCol;$('he').onclick=exportAll;
- const f=$('hf');$('hi').onclick=()=>f.click();
- f.onchange=()=>{const file=f.files[0];if(!file)return;const r=new FileReader();r.onload=async()=>{let d;try{d=JSON.parse(r.result);if(d.app!=='duel-archive'||!d.S)throw 0}catch(e){return toast("Fichier non reconnu : il faut une sauvegarde de l'ancienne version (.json).",true)}
-  if(!confirm("Importer cette sauvegarde dans ton compte ? Elle sera ajoutée à tes données actuelles."))return;
-  try{loading('Import en cours…');await legacyImport(d.S,d.IM)}catch(e){fail(e,'Import impossible')}home()};r.readAsText(file);f.value=''};
- if($('hl'))$('hl').onclick=async()=>{if(!confirm("Importer les données de l'ancienne version dans ton compte ?"))return;
-  try{loading('Import en cours…');await legacyImport(legacyLocal(),await idbOld())}catch(e){fail(e,'Import impossible')}home()};
 }
 
 /* ---------- Page d'une collection ---------- */
@@ -1183,6 +1155,7 @@ $('ux-qx').onclick=()=>{$('ux-q').value='';$('ux-q').oninput({target:$('ux-q')})
 function enhanceMenu(){const m=$('menu');let grp='';m.querySelectorAll(':scope>*').forEach(el=>{if(el.classList.contains('grp')){grp=el.textContent.trim();el.classList.toggle('e',!grp);return}
  if(el.tagName!=='A'||el.dataset.ok)return;el.dataset.ok=1;const n=el.textContent.trim(),add=/^\+/.test(n);el.classList.toggle('add',add);
  el.dataset.i=add?'+':n.replace(/[^A-Za-zÀ-ÿ0-9]/g,'').slice(0,2).toUpperCase();
+ if(!add){const cid=(el.getAttribute('href')||'').replace('#/set/','');let u='';try{const c=COLS.find(x=>x.id===cid);u=c?covUrl(c):''}catch(e){}if(u){const pi=new Image();pi.onload=()=>{el.style.setProperty('--cv','url("'+u.replace(/["\\]/g,'')+'")');el.classList.add('hascv')};pi.src=u}}
  el.innerHTML='<span class="t"><span class="n"></span><span class="s"></span></span>';el.querySelector('.n').textContent=add?'Nouvelle collection':n;el.querySelector('.s').textContent=add?'Créer ou importer':(grp||'Extension')});markActive()}
 function markActive(){const set=B.classList.contains('on-set');document.querySelectorAll('#menu a').forEach(a=>a.classList.toggle('act',a.getAttribute('href')===location.hash&&location.hash.length>2));$('ux-sbh').classList.toggle('act',!set);$('ux-t1').classList.toggle('act',!set)}
 new MutationObserver(enhanceMenu).observe($('menu'),{childList:true});enhanceMenu();
@@ -1242,8 +1215,11 @@ function updateBar(){const set=B.classList.contains('on-set'),c=set?cardEl(sel):
 function colOf(){const m=location.hash.match(/#\/set\/([\w-]+)/);try{return m&&COLS.find(c=>c.id===m[1])}catch(e){return null}}
 function setPage(){const g=$('g'),t=app.querySelector('.tools'),h1=app.querySelector('h1');if(!g||!t)return;
  let th2=app.querySelector('.ux-thumb');if(!th2){th2=document.createElement('div');th2.className='ux-thumb';app.insertBefore(th2,app.firstChild)}
- let src='';try{const col=colOf();src=col&&col.cover&&SU[col.cover]}catch(e){}if(!src){const im=g.querySelector('.img img');src=im&&im.src}
- th2.innerHTML=src?'<img alt="" src="'+src+'">':((h1&&h1.textContent||'DA').replace(/[^A-Za-z0-9]/g,'').slice(0,2).toUpperCase());
+ let src='',fb='';try{const col=colOf();src=col&&(SU[col.cover]||(col.catCover?pubUrl(col.catCover):''))||''}catch(e){}
+ const im0=g.querySelector('.img img');fb=im0&&im0.src||'';if(!src)src=fb;
+ const ini=(h1&&h1.textContent||'DA').replace(/[^A-Za-z0-9]/g,'').slice(0,2).toUpperCase();
+ if(th2.dataset.s!==src){th2.dataset.s=src;th2.textContent='';
+  if(src){const im=document.createElement('img');im.alt='';im.src=src;im.onerror=()=>{if(fb&&im.src!==fb){im.onerror=null;im.src=fb}else{im.remove();th2.textContent=ini}};th2.appendChild(im)}else th2.textContent=ini}
  if(!t.querySelector('.ux-play')){const pl=document.createElement('button');pl.className='ux-play';pl.type='button';pl.title='Carte au hasard';pl.innerHTML='<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 9.2 5.4 4 4 5.4l5.2 5.2 1.4-1.4zM14.5 4l2 2L4 18.5l1.4 1.4L17.9 7.4l2 2V4h-5.4zm.3 9.4-1.4 1.4 3.1 3.1-2 2h5.4v-5.4l-2 2-3.1-3.1z"/></svg>';pl.onclick=()=>$('ux-rnd').click();t.insertBefore(pl,t.firstChild);
   const sp=document.createElement('span');sp.className='ux-sp';t.appendChild(sp);
   const vw=document.createElement('div');vw.className='ux-view';vw.innerHTML='<button data-v="list" title="Liste"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg></button><button data-v="grid" title="Grille"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v8h8V3H3zm6 6H5V5h4v4zm-6 4v8h8v-8H3zm6 6H5v-4h4v4zm4-16v8h8V3h-8zm6 6h-4V5h4v4zm-6 4v8h8v-8h-8zm6 6h-4v-4h4v4z"/></svg></button>';t.appendChild(vw);
