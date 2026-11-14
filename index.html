@@ -451,7 +451,8 @@ html.cm-lock{overflow:hidden}
  #ux-scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:60;opacity:0;pointer-events:none;transition:opacity .25s;display:block}body.sb-open #ux-scrim,body.np-open #ux-scrim{opacity:1;pointer-events:auto}#cfg{bottom:132px;right:8px}
  body:not(.authed) #ux-tabs{display:none}body:not(.authed) #ux-shell{grid-template-rows:54px minmax(0,1fr)}.stats{grid-template-columns:1fr}.stat{border-right:0;border-bottom:1px solid var(--ln)}.stat:last-child{border-bottom:0}
 }
-.c .fst{display:none;position:absolute;top:5px;right:10px;width:22px;height:22px;background:var(--fst-img) center/contain no-repeat;z-index:4;pointer-events:none}
+.c.own:after{line-height:11px}/* hauteur de OWN fixée (11 + 2×3 de marge = 17px) pour que le logo 1st ait exactement la même */
+.c .fst{display:none;position:absolute;top:8px;right:10px;width:17px;height:17px;background:var(--fst-img) center/contain no-repeat;z-index:4;pointer-events:none}
 .c.fs .fst{display:block}.c.own.fs .fst{right:52px}
 body.v-list .c .fst{display:none!important}
 .acts button.on,.ib button.bf.on{background:var(--fill);color:var(--onf);border-color:var(--fill)}
